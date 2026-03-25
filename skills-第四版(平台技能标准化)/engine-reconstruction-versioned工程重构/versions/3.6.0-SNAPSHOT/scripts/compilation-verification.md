@@ -369,5 +369,59 @@ java -jar {aggregation-module-path}/target/{artifact-name}.jar
 | `Connection refused: connect (Nacos)` | 注册中心不可达 | 添加 `spring.cloud.nacos.discovery.enabled=false` |
 | `ClassNotFoundException` | 打包方式不正确 | 确认聚合层模块有 `spring-boot-maven-plugin` |
 | `No qualifying bean of type` | Bean 扫描路径不对 | 检查 `@SpringBootApplication(scanBasePackages=...)` |
+| `NoClassDefFoundError` / `Unable to load cache item`（CGLIB增强失败） | 依赖 exclusion 排除了 `@Configuration` 类所需的传递依赖 | 见 6.6 节详细排查流程 |
+| `ConflictingBeanDefinitionException` | 不同 jar 包中存在同名 `@Service`/`@Component` 类（默认 bean name 冲突） | 为其中一方显式指定 `@Service("customBeanName")` |
+
+#### 6.6 CGLIB 增强失败排查流程（NoClassDefFoundError / Unable to load cache item）
+
+**典型堆栈特征：**
+```
+java.lang.IllegalStateException: Unable to load cache item
+  at org.springframework.cglib.core.internal.LoadingCache.createEntry(...)
+  at ...ConfigurationClassPostProcessor.enhanceConfigurationClasses(...)
+Caused by: java.lang.NoClassDefFoundError: some/missing/ClassName
+Caused by: java.lang.ClassNotFoundException: some.missing.ClassName
+```
+
+**根因分析：**
+Spring 在启动阶段会用 CGLIB 为所有 `@Configuration` 类生成代理子类。CGLIB 需要加载该类**所有方法的参数类型和返回类型**。如果某个 `@Bean` 方法的参数类型来自一个被 `<exclusion>` 排除的传递依赖，即使该 `@Bean` 方法在运行时不会被调用（如条件化 bean），CGLIB 仍然会尝试加载该类型，导致 `NoClassDefFoundError`。
+
+**排查步骤：**
+
+1. **从堆栈底部找到缺失的类名**，例如 `org.apache.rocketmq.spring.core.RocketMQTemplate`
+
+2. **确定该类来自哪个 Maven 制品**：
+   ```bash
+   # 在本地 Maven 仓库中搜索
+   find ~/.m2/repository -name "*.jar" -exec sh -c 'jar tf "$1" | grep -q "RocketMQTemplate" && echo "$1"' _ {} \;
+   ```
+
+3. **确定哪个 `@Configuration` 类引用了它**：
+   ```bash
+   # 在项目依赖的 jar 中搜索引用该类的 @Configuration 类
+   # 重点检查第三方组件包（如 omp-log、method-logger-com 等）
+   jar tf {suspect.jar} | grep "Config"
+   javap -p {ConfigClass.class}  # 查看方法签名是否引用缺失类
+   ```
+
+4. **检查聚合层 pom.xml 中是否 exclusion 了该制品**：
+   ```bash
+   grep -A5 "exclusion" {aggregation-module}/pom.xml
+   ```
+
+5. **修复方案（按优先级）**：
+
+   | 优先级 | 方案 | 说明 |
+   |-------|------|------|
+   | 1 | 移除 exclusion | 让传递依赖正常传入，最简单直接 |
+   | 2 | 显式添加缺失依赖 | 保留 exclusion 但单独引入缺失制品 |
+   | 3 | 排除整个组件 | 如果该组件完全不需要，从依赖中移除 |
+
+**常见案例：**
+
+| 组件 | @Configuration 类 | 引用的缺失类 | 常被排除的制品 |
+|------|-------------------|-------------|--------------|
+| `method-logger-com` | `MessageLogServiceConfig` | `RocketMQTemplate` | `rocketmq-spring-boot-starter` |
+| `omp-log` | `LogScanConfiguration` | （视版本而定） | （视版本而定） |
 
 > **注意**：启动验证依赖外部基础设施（数据库、注册中心等），如环境不具备完整条件，可仅验证 `mvn package -DskipTests` 通过即可，启动验证作为可选步骤记录在报告中。
