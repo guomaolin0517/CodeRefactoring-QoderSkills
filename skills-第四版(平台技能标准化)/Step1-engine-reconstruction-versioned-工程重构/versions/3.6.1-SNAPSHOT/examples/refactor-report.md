@@ -1,29 +1,32 @@
-# 重构完成报告输出示例 - 3.6.1-SNAPSHOT
-
-> 与 3.6.0-SNAPSHOT 基线版本一致。**TODO**: 如有差异请修改。
+# 重构完成报告示例
 
 ```
-# 四层架构重构完成报告
+## 重构完成报告
 
-## 执行概要
-- 工程版本：3.6.1-SNAPSHOT
-- 移动模块数：{count}
-- 创建容器 POM 数：{count}
-- 更新 POM 文件数：{count}
-- 更新 Java 文件数：{count}
-- 更新配置文件数：{count}
+### 重构摘要
+| 项目 | 详情 |
+|------|------|
+| 工程版本 | 3.6.0-SNAPSHOT |
+| 根POM模式 | standalone (spring-boot-starter-parent) |
+| 业务模块 | framework-module, 4a-module |
+| 移动模块数 | 6 个 |
+| 重命名模块数 | 4 个 |
+| 新建容器 POM | 7 个 |
+| 新建根 POM | 1 个（含 dependencyManagement） |
+| Java 文件修改 | 0 个 |
 
-## 编译验证
-- 状态：通过/失败
-- 错误数：{count}
+### 验证清单
+| 编号 | 验证项 | 结果 |
+|------|--------|------|
+| V-01 | relativePath 正确 | PASS |
+| V-02 | 容器 POM packaging=pom | PASS |
+| V-03 | modules 声明与目录一致 | PASS |
+| V-04 | 无旧 artifactId 残留 | PASS |
+| V-05 | 根POM parent 为 spring-boot-starter-parent | PASS |
+| V-06 | 根POM 包含 dependencyManagement | PASS |
+| V-07 | 根POM 包含 repositories | PASS |
+| V-08 | mvn compile 通过 | PASS / 待验证 |
 
-## 编译错误（如有）
-| 模块 | 文件 | 行号 | 错误类型 | 错误信息 |
-|------|------|------|----------|----------|
-...
-
-## 需人工处理
-| 模块 | 原因 | 建议 |
-|------|------|------|
-...
+### 注意事项
+- [列出需要用户关注的事项]
 ```

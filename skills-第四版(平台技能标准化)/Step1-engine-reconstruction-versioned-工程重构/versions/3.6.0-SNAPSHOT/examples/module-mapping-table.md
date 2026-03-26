@@ -5,9 +5,10 @@
 ```
 | 源路径 | 目标层级 | 目标路径 | 操作类型 |
 |--------|----------|----------|----------|
-| grp-platform-common/ | 底座层 | grp-common-boot/ | 重命名 |
-| grp-platform-common/grp-util-com/ | 底座层子模块 | grp-common-boot/grp-util-com/ | 移动 |
-| grp-platform-server/element-server2/ | 能力层 | element-module/grp-capability-element/element-server/ | 移动+重命名 |
-| grp-platform-springcloud/element-server2-springcloud/ | 聚合层 | element-module/grp-aggregation-element/element-server-springcloud/ | 移动+重命名 |
-| grp-platform-feign/element-feign-com/ | 体验层 | element-module/grp-experience-element/element-feign-com/ | 移动 |
+| grp-framework-api/ | 能力层 (API) | framework-module/grp-capability-framework/grp-framework-api/ | 移动 |
+| framework-server2/ | 能力层 (Controller) | framework-module/grp-capability-framework/framework-server/ | 移动+重命名 |
+| framework-server2-com/ | 能力层 (Service) | framework-module/grp-capability-framework/framework-server-com/ | 移动+重命名 |
+| framework-server2-springcloud/ | 聚合层 | framework-module/grp-aggregation-framework/framework-server-springcloud/ | 移动+重命名 |
+| framework-feign-com/ | 能力层 | framework-module/grp-capability-framework/framework-feign-com/ | 移动 |
+| 4A-server-api/ | 能力层 (API) | 4a-module/grp-capability-4a/grp-4a-api/ | 移动+重命名 |
 ```

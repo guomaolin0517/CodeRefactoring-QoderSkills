@@ -1,5 +1,5 @@
-<!-- 聚合层容器 POM 模板 - 3.6.1-SNAPSHOT -->
-<!-- TODO: 如有差异请修改 -->
+<!-- 聚合层容器 POM 模板 -->
+<!-- 使用说明：将 {groupId}、{version}、{module} 替换为实际值 -->
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -15,8 +15,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>{module}-server-springcloud</module>
-        <module>{module}-server-huawei</module>
-        <module>{module}-server-pivotal</module>
-        <module>{module}-server-tencent</module>
+        <!-- 按需添加其他适配模块 -->
     </modules>
 </project>

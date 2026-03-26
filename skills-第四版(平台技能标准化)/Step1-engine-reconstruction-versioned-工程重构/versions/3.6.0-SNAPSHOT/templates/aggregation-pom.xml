@@ -15,8 +15,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>{module}-server-springcloud</module>
-        <module>{module}-server-huawei</module>
-        <module>{module}-server-pivotal</module>
-        <module>{module}-server-tencent</module>
+        <!-- 按需添加其他适配模块 -->
     </modules>
 </project>

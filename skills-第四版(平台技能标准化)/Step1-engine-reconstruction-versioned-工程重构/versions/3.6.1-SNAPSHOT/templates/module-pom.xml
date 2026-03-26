@@ -1,5 +1,5 @@
-<!-- 业务模块容器 POM 模板 - 3.6.1-SNAPSHOT -->
-<!-- TODO: 如有差异请修改 -->
+<!-- 业务模块容器 POM 模板 -->
+<!-- 使用说明：将 {groupId}、{root-artifactId}、{version}、{module} 替换为实际值 -->
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,6 +14,7 @@
     <artifactId>{module}-module</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>grp-common-{module}</module>
         <module>grp-capability-{module}</module>
         <module>grp-aggregation-{module}</module>
         <!-- <module>grp-experience-{module}</module> -->
