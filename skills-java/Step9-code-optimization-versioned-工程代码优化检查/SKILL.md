@@ -1,91 +1,115 @@
 ---
 name: Step9-code-optimization-versioned-工程代码优化检查
 description: >-
-  [Step9] 优化 grp-capability-element 工程下 element-server-com 模块中 @Service 和 @Repository 类的代码质量（多版本适配）。
-  根据工程 pom.xml 中的 version 自动选择对应版本的检查与修复规则。
+  [Step9] 优化工程代码质量（产品线适配）。根据工程 pom.xml 中的 groupId 自动选择对应产品线的检查与修复规则。
   包括修复 SQL 注入漏洞（值拼接参数化、动态表名/列名白名单校验）、增强日志记录（Lombok @Slf4j）、
   清理冗余代码（StringBuffer→StringBuilder、冗余变量、嵌套条件简化）。
-  当用户要求优化要素模块代码、修复 SQL 注入、增强日志、清理代码、代码审查优化时使用此技能。
-  适用于使用 BaseDAO/JdbcTemplate 持久层的 Spring Boot Java 项目。
+  当用户要求优化模块代码、修复 SQL 注入、增强日志、清理代码、代码审查优化时使用此技能。
 ---
 
-# 工程代码优化检查与修复（多版本适配）
+# 工程代码优化检查与修复（产品线适配）
 
 ## 概述
 
-本技能是工程代码优化检查与修复的**多版本适配版本**。不同工程版本的代码优化规范可能存在差异，本技能会根据工程 `pom.xml` 中声明的 `<version>` 自动选择对应版本的检查与修复规则执行。
+本技能是工程代码优化检查与修复的**产品线适配版本**。不同产品线的代码优化规范可能存在差异，本技能会根据工程 `pom.xml` 中声明的 `<groupId>` 自动选择对应产品线的检查与修复规则执行。
 
-## 支持的版本
+针对 `@Service` 和 `@Repository` 类进行系统化代码质量优化，包含三大核心功能：
 
-| 工程版本 | 规则目录 | 说明 |
-|----------|----------|------|
-| `3.6.0-SNAPSHOT` | [versions/3.6.0-SNAPSHOT/](versions/3.6.0-SNAPSHOT/) | 基线版本，完整工程代码优化检查与修复规则 |
-| `3.6.1-SNAPSHOT` | [versions/3.6.1-SNAPSHOT/](versions/3.6.1-SNAPSHOT/) | 增量修订版本 |
-| `3.7.0-SNAPSHOT` | [versions/3.7.0-SNAPSHOT/](versions/3.7.0-SNAPSHOT/) | 新特性版本 |
+1. **SQL 注入修复**（优先级最高）：值拼接参数化、动态表名白名单校验、动态列名正则校验
+2. **日志增强**：统一 `@Slf4j` 注解、方法入口/异常日志补全
+3. **代码清理**：StringBuffer→StringBuilder、冗余变量消除、条件简化、空集合检查统一
 
-## 版本检测与路由流程
+## 产品线检测与路由流程
 
-### Step 0: 自动检测工程版本
+### Step 0: 自动检测产品线
 
 **此步骤在所有其他步骤之前执行，不可跳过。**
 
 1. 读取当前工程根目录（或所在 module）的 `pom.xml` 文件
-2. 提取 `<version>` 标签的值（如 `3.6.0-SNAPSHOT`）
-3. 如果当前 POM 没有直接声明 `<version>`，则查找 `<parent>` 中的 `<version>`
-4. 如果是子模块，可向上查找父 POM 获取版本号
-5. 将提取到的版本号与下方版本映射表匹配
+2. 提取 `<groupId>` 标签的值
+3. 如果当前 POM 没有直接声明 `<groupId>`，则查找 `<parent>` 中的 `<groupId>`
+4. 将提取到的 groupId 与下方产品线映射表匹配
 
-### 版本映射规则
-
-```
-提取到的版本号 → 匹配规则 → 加载的版本规则目录
-───────────────────────────────────────────────
-3.6.0-SNAPSHOT   → 精确匹配    → versions/3.6.0-SNAPSHOT/
-3.6.1-SNAPSHOT   → 精确匹配    → versions/3.6.1-SNAPSHOT/
-3.7.0-SNAPSHOT   → 精确匹配    → versions/3.7.0-SNAPSHOT/
-3.6.x-SNAPSHOT   → 模糊匹配 3.6 → versions/3.6.1-SNAPSHOT/ (取3.6系列最新)
-3.7.x-SNAPSHOT   → 模糊匹配 3.7 → versions/3.7.0-SNAPSHOT/ (取3.7系列最新)
-其他版本          → 降级到默认   → versions/3.6.0-SNAPSHOT/ (基线版本)
-```
-
-**模糊匹配逻辑：**
-- 精确匹配优先：如果版本号与某个版本目录完全匹配，直接使用
-- 主版本+次版本匹配：取该系列下最新的版本目录（版本号数值最大的）
-- 无匹配时降级到 `3.6.0-SNAPSHOT` 作为基线默认版本
-
-### Step 0 执行示例
+### 产品线映射规则
 
 ```
-检测到工程版本: 3.6.0-SNAPSHOT
-→ 精确匹配: versions/3.6.0-SNAPSHOT/
-→ 加载该版本的 REFERENCE.md 作为执行规则
-
-检测到工程版本: 3.6.2-SNAPSHOT
-→ 无精确匹配
-→ 模糊匹配 3.6 系列，最新为 3.6.1-SNAPSHOT
-→ 加载 versions/3.6.1-SNAPSHOT/REFERENCE.md
-
-检测到工程版本: 4.0.0-SNAPSHOT
-→ 无精确匹配，无系列匹配
-→ 降级到基线: versions/3.6.0-SNAPSHOT/REFERENCE.md
-→ 输出警告: "当前工程版本 4.0.0-SNAPSHOT 无匹配规则，已降级使用 3.6.0-SNAPSHOT 基线规则"
+提取到的 groupId → 匹配规则 → 加载的产品线目录
+───────────────────────────────────────────────────
+grp.pt              → 精确匹配    → products/技术中台/
+grp.budget          → 精确匹配    → products/预算/
+gfmis.bgtex         → 精确匹配    → products/执行/
+com.ctjsoft.gfmis   → 精确匹配    → products/执行/
+grp.gfmis           → 精确匹配    → products/执行/
+grp.gfmis.*         → 前缀匹配    → products/执行/
+com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
+其他 groupId         → 降级到默认   → products/技术中台/ (默认产品线)
 ```
 
-### Step 1: 加载版本规则
+> **匹配优先级**：精确匹配优先于前缀匹配。例如 `com.ctjsoft.gfmis.v3` 精确匹配到「指标」，不会被 `com.ctjsoft.gfmis` 的规则截获。`grp.gfmis.xxx` 形式的 groupId 通过前缀匹配到「执行」。
 
-根据 Step 0 确定的版本目录，读取该目录下的 `REFERENCE.md` 文件，获取该版本的完整检查与修复规则。
+### 资源加载流程
 
-**加载路径模板：** `versions/{matched-version}/REFERENCE.md`
+1. **始终加载通用资源**：读取技能根目录下的 `examples/`、`scripts/`、`templates/`
+2. **加载产品线特有资源**：读取 `products/{产品线}/REFERENCE.md` 及其子目录
+3. **冲突处理**：产品线规则优先
 
-### Step 2: 执行检查或修复
+---
 
-按照加载的版本规则执行具体的代码优化检查或修复操作。规则文件中包含：
-- 工作流程（5 步）
-- SQL 注入修复规则
-- 日志增强规则
-- 代码优化规则
-- 安全约束
-- 所有相关的 examples/、templates/、scripts/ 引用
+## 筛选规则
+
+- **处理**: 带 `@Service` 或 `@Repository` 注解的 Java 类
+- **跳过**: 文件总行数 > 1000 行的类（记录到跳过清单中）
+- **排除**: 接口文件、Mapper 接口、Controller、配置类、DTO/Model
+
+## 不可变红线
+
+完整安全约束 → [scripts/safety-constraints.md](scripts/safety-constraints.md)
+
+关键红线：
+1. **不修改**类名
+2. **不修改**方法签名
+3. **不修改**已有的日志语句
+4. **不修改**业务逻辑的算法流程
+
+---
+
+## 工作流程
+
+### Step 1: 文件扫描与筛选
+
+扫描目标目录下所有 `*ServiceImpl.java`、`*DaoImpl.java`、`*DAO.java`（带 @Repository）。
+
+已知超大文件清单 → [templates/skip-files.md](templates/skip-files.md)
+
+### Step 2: 单文件分析
+
+对每个待处理文件执行类型判断和风险点识别。
+
+### Step 3: 执行优化
+
+按以下优先级执行：
+
+| 优先级 | 优化项 | 适用层 | 详细规则 |
+|--------|--------|--------|---------|
+| 1 | SQL 注入修复 | DAO 层 | [scripts/sql-injection-rules.md](scripts/sql-injection-rules.md) |
+| 2 | 日志增强 | Service + DAO | [scripts/logging-rules.md](scripts/logging-rules.md) |
+| 3 | 代码逻辑优化 | Service + DAO | [scripts/code-optimization-rules.md](scripts/code-optimization-rules.md) |
+
+### Step 4: 自检验证
+
+### Step 5: 生成变更报告
+
+变更报告模板 → [templates/report-template.md](templates/report-template.md)
+变更报告示例 → [examples/change-report.md](examples/change-report.md)
+
+---
+
+## 批量处理策略
+
+1. 第一个文件处理完后，请用户确认优化风格
+2. 确认后，自动继续处理所有剩余文件
+3. 每处理完 5-10 个文件，输出进度报告
+4. 所有文件处理完毕后生成最终报告
 
 ---
 
@@ -93,71 +117,54 @@ description: >-
 
 | 场景 | 触发关键词 | 调用功能 |
 |------|-----------|----------|
-| 修复 SQL 注入安全漏洞 | "SQL注入修复"、"安全修复"、"参数化查询" | 版本检测 → SQL 注入修复 |
-| 增强日志记录 | "日志增强"、"添加日志"、"@Slf4j" | 版本检测 → 日志增强 |
-| 清理冗余代码 | "代码清理"、"代码优化"、"冗余清理" | 版本检测 → 代码清理 |
-| 全量优化（三合一） | "工程代码优化"、"模块优化"、"代码质量优化" | 版本检测 → 全量优化 |
+| 修复 SQL 注入 | "SQL注入修复"、"安全修复" | 产品线检测 → SQL 注入修复 |
+| 增强日志 | "日志增强"、"@Slf4j" | 产品线检测 → 日志增强 |
+| 清理冗余代码 | "代码清理"、"代码优化" | 产品线检测 → 代码清理 |
+| 全量优化 | "工程代码优化"、"代码质量优化" | 产品线检测 → 全量优化 |
 
 ## 前置条件
 
-- 工程为 Java 微服务项目（Spring Boot/Cloud）
+- 工程为 Java 微服务项目
 - 使用 BaseDAO/JdbcTemplate 持久层
-- 项目根目录（或所在 module）存在 `pom.xml`（用于版本检测）
 - Lombok 依赖已在项目中声明
 
 ## 目录结构
 
 ```
-工程代码优化检查-versioned/
-├── SKILL.md                          # 本文件 - 版本检测与路由入口
-└── versions/
-    ├── 3.6.0-SNAPSHOT/               # 基线版本
-    │   ├── REFERENCE.md                  # 该版本完整规则
-    │   ├── scripts/                  # 检查/修复规则脚本
-    │   │   ├── sql-injection-rules.md
-    │   │   ├── logging-rules.md
-    │   │   ├── code-optimization-rules.md
-    │   │   └── safety-constraints.md
-    │   ├── examples/                 # 示例文件
-    │   │   ├── change-report.md
-    │   │   └── workflow-demo.md
-    │   └── templates/                # 模板文件
-    │       ├── report-template.md
-    │       └── skip-files.md
-    ├── 3.6.1-SNAPSHOT/               # 增量修订版本
+Step9-code-optimization-versioned-工程代码优化检查/
+├── SKILL.md
+├── examples/
+│   ├── change-report.md
+│   └── workflow-demo.md
+├── scripts/
+│   ├── sql-injection-rules.md
+│   ├── logging-rules.md
+│   ├── code-optimization-rules.md
+│   └── safety-constraints.md
+├── templates/
+│   ├── report-template.md
+│   └── skip-files.md
+└── products/
+    ├── 技术中台/
     │   ├── REFERENCE.md
-    │   ├── scripts/
-    │   │   ├── sql-injection-rules.md
-    │   │   ├── logging-rules.md
-    │   │   ├── code-optimization-rules.md
-    │   │   └── safety-constraints.md
     │   ├── examples/
-    │   │   ├── change-report.md
-    │   │   └── workflow-demo.md
+    │   ├── scripts/
     │   └── templates/
-    │       ├── report-template.md
-    │       └── skip-files.md
-    └── 3.7.0-SNAPSHOT/               # 新特性版本
-        ├── REFERENCE.md
-        ├── scripts/
-        │   ├── sql-injection-rules.md
-        │   ├── logging-rules.md
-        │   ├── code-optimization-rules.md
-        │   └── safety-constraints.md
-        ├── examples/
-        │   ├── change-report.md
-        │   └── workflow-demo.md
-        └── templates/
-            ├── report-template.md
-            └── skip-files.md
+    ├── 预算/
+    │   └── ...
+    └── 执行/
+        └── ...
 ```
 
-## 添加新版本
+## 文件索引
 
-如需支持新的工程版本：
-
-1. 在 `versions/` 下创建新的版本目录，如 `versions/3.8.0-SNAPSHOT/`
-2. 复制最接近的版本目录内容作为基础
-3. 修改 `REFERENCE.md` 中该版本特有的规则差异
-4. 在本文件（SKILL.md）的「支持的版本」表格中添加新条目
-5. 更新版本映射规则中的匹配逻辑
+| 文件 | 说明 |
+|------|------|
+| [scripts/sql-injection-rules.md](scripts/sql-injection-rules.md) | SQL 注入修复指南 |
+| [scripts/logging-rules.md](scripts/logging-rules.md) | 日志增强规则 |
+| [scripts/code-optimization-rules.md](scripts/code-optimization-rules.md) | 代码优化规则 |
+| [scripts/safety-constraints.md](scripts/safety-constraints.md) | 不可变红线与安全约束 |
+| [templates/report-template.md](templates/report-template.md) | 变更报告模板 |
+| [templates/skip-files.md](templates/skip-files.md) | 已知超大文件清单 |
+| [examples/change-report.md](examples/change-report.md) | 变更报告示例 |
+| [examples/workflow-demo.md](examples/workflow-demo.md) | 单文件优化工作流演示 |
