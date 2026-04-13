@@ -66,6 +66,7 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 | S1-03 | Controller 注入 ServiceImpl 而非接口 | FAIL | 违反面向接口编程原则 |
 | S1-04 | Entity 泄露到 Controller 层 | WARN | 暴露数据库结构，安全风险 |
 | S1-05 | 跨模块直接类引用 | WARN | 模块间耦合，违反依赖原则 |
+| S1-06 | 分层类未放在正确模块 | FAIL | Controller/Service/DAO/Model 必须在对应模块 |
 
 完整检查规则详情 → [scripts/check-rules.md](scripts/check-rules.md)
 
@@ -100,6 +101,16 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 ### Phase 1: 扫描分析
 扫描 Controller 层所有文件，识别依赖违规。
 
+**重要：在 Phase 1 开始前，必须优先执行 S1-06 模块归属检查**：
+1. 扫描全工程所有 Controller/Service/DAO/Model 类文件
+2. 验证每类文件是否在正确的 Maven 模块中
+   - Controller 类 → 必须在 `grp-{module}-controller` 模块
+   - Service 类 → 必须在 `grp-{module}-service` 模块
+   - DAO 类 → 必须在 `grp-{module}-service` 模块
+   - Model 类 → 必须在 `grp-{module}-model` 模块
+3. 输出模块归属违规清单（S1-06 级别）
+4. S1-06 违规必须在其他依赖检查之前修复
+
 ### Phase 2: 生成修复计划
 列出所有需要修复的项，包含文件位置、违规类型和修复方案。
 
@@ -107,8 +118,17 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 将修复计划展示给用户，**必须获得确认后才开始执行修复操作**。
 
 ### Phase 4: 逐项执行修复
-按 4 大修复规范逐项执行：
-1. 消除 Controller→Controller 依赖（含决策树判定）
+按 5 大修复规范逐项执行（**优先级从高到低**）：
+
+**优先级 0（最高）**：S1-06 模块归属修复
+- 将 Controller 类移动到 `grp-{module}-controller` 模块
+- 将 Service 类移动到 `grp-{module}-service` 模块
+- 将 DAO 类移动到 `grp-{module}-service` 模块
+- 将 Model 类移动到 `grp-{module}-model` 模块
+- 更新 package 声明和所有 import 引用
+- 确保编译通过
+
+**优先级 1**：消除 Controller→Controller 依赖（含决策树判定）
 2. Controller→DAO/Mapper 补建 Service 中间层
 3. Controller 注入 ServiceImpl → Service 接口（遵循接口设计规范）
 4. Entity 泄露修复

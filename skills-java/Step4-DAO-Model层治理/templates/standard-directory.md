@@ -66,8 +66,8 @@ dao/
 
 > **重要**：本技能**不处理** model 层的分类和移动。model 实体类保持原有路径和 package 不变。
 
-如需将 model 实体集中到 api 模块，建议手动操作：
-1. 将所有 model 实体类复制到 `grp-{module}-api/src/main/java/` 对应包路径下
+如需将 model 实体集中到 model 模块，建议手动操作：
+1. 将所有 model 实体类复制到 `grp-{module}-model/src/main/java/` 对应包路径下
 2. **不要修改** package 声明
 3. **不要修改** import 引用
 

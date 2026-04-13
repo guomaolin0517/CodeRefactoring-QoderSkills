@@ -8,7 +8,7 @@
  ├── grp-common-{module}/                  # 公共层（不变）
  ├── grp-capability-{module}/              # 能力层容器
  │   ├── pom.xml
- │   ├── grp-{module}-api/                 # API 定义（不变）
+ │   ├── grp-{module}-model/                 # Model 定义（不变）
 -│   ├── {module}-server/                  # [engine-reconstruction 标准] Controller 层
 +│   ├── {module}-controller/              # [微调后] Controller 层
 -│   └── {module}-server-com/              # [engine-reconstruction 标准] Service 层
@@ -37,7 +37,7 @@
 │   ├── grp-common-{module}/                   # 公共层（可选预留）
 │   ├── grp-capability-{module}/               # 能力层容器
 │   │   ├── pom.xml                            # packaging=pom
-│   │   ├── grp-{module}-api/                  # API 定义（不变）
+│   │   ├── grp-{module}-model/                  # Model 定义（不变）
 │   │   │   └── pom.xml
 │   │   ├── {module}-controller/               # ★ Controller 层（原 {module}-server）
 │   │   │   └── pom.xml
@@ -57,14 +57,14 @@
 
 ```
 grp-experience-{module}/
-  └── {module}-feign-com  ──依赖──→  grp-{module}-api
+  └── {module}-feign-com  ──依赖──→  grp-{module}-model
 
 grp-aggregation-{module}/
   └── {module}-server-springcloud  ──依赖──→  {module}-controller (★微调后名称)
 
 grp-capability-{module}/
   ├── {module}-controller (★)  ──依赖──→  {module}-service (★)
-  ├── {module}-controller (★)  ──依赖──→  grp-{module}-api
-  ├── {module}-service (★)     ──依赖──→  grp-{module}-api
+  ├── {module}-controller (★)  ──依赖──→  grp-{module}-model
+  ├── {module}-service (★)     ──依赖──→  grp-{module}-model
   └── {module}-service (★)     ──依赖──→  底座层模块 (grp-util-com, grp-database-com 等)
 ```

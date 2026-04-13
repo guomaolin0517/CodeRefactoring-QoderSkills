@@ -13,7 +13,7 @@
 
 ### model 实体管理
 
-- model 实体类建议集中到 `grp-{module}-api` 模块
+- model 实体类建议集中到 `grp-{module}-model` 模块
 - 复制时**不要修改** package 声明
 - 执行产品线的 model 实体类较多，建议分批次集中
 

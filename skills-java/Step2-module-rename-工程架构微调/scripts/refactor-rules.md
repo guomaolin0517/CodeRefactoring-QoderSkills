@@ -42,14 +42,14 @@
 ```xml
 <!-- 旧 -->
 <modules>
-    <module>grp-{module}-api</module>
+    <module>grp-{module}-model</module>
     <module>{module}-server</module>
     <module>{module}-server-com</module>
 </modules>
 
 <!-- 新 -->
 <modules>
-    <module>grp-{module}-api</module>
+    <module>grp-{module}-model</module>
     <module>{module}-controller</module>
     <module>{module}-service</module>
 </modules>

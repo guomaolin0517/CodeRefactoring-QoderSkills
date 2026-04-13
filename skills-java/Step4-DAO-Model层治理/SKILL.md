@@ -10,7 +10,7 @@ description: "[Step4] Java微服务DAO层治理检查与修复工具（产品线
 本技能是 S2 DAO 层治理检查与修复的**产品线适配版本**。与原版 Step4 不同，本技能**严格禁止修改 model 实体类的路径、package 和引用**，只聚焦于 DAO 层的目录结构治理。
 
 **核心约束**：
-- **移动** model 实体类到 `grp-{module}-api` 模块（物理文件移动）
+- **移动** model 实体类到 `grp-{module}-model` 模块（物理文件移动）
 - **不修改** model 实体类的 package 声明（保持原有包路径）
 - **不修改** 引用 model 实体类的 import 语句（因 package 未变）
 - **只调整** DAO 层的目录结构和 model 实体的物理位置
@@ -20,7 +20,7 @@ description: "[Step4] Java微服务DAO层治理检查与修复工具（产品线
 包含两大核心功能：
 
 1. **DAO 层检查**：扫描 Java 微服务代码中 DAO 层的目录结构与文件分类问题，输出结构化检查报告。
-2. **DAO 层修复**：修复检查发现的 DAO 层目录结构问题，修正命名、归位文件、分离 mapper/entity，并将 model 实体集中到 api 模块（不改变 package 和引用）。
+2. **DAO 层修复**：修复检查发现的 DAO 层目录结构问题，修正命名、归位文件、分离 mapper/entity，并将 model 实体集中到 model 模块（不改变 package 和引用）。
 
 ## 产品线检测与路由流程
 
@@ -74,7 +74,7 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 | S2-03 | DAO 层 mapper/entity 分离 | FAIL | Mapper 和 Entity 应分离到子目录 |
 | S2-04 | 核心四层目录完整性 | WARN | controller/service/dao/model |
 | S2-05 | resources/mapper 目录对应 | WARN | MyBatis XML 按模块分组 |
-| S2-06 | model 实体集中到 api 模块 | INFO | 集中管理但不改变 package 和引用 |
+| S2-06 | model 实体集中到 model 模块 | INFO | 集中管理但不改变 package 和引用 |
 
 > **与原版 Step4 的差异**：
 > - ~~S2-03 DTO/VO/Query 分类归档~~ → 移除，不处理 model 层分类
@@ -110,7 +110,7 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 ### 核心原则
 
 1. **DAO 层目录调整**：修正 imp→impl、DAO 接口/实现分离、mapper/entity 分离
-2. **model 实体集中到 api 模块**：物理文件移动到 `grp-{module}-api`，但不改变 package 声明
+2. **model 实体集中到 model 模块**：物理文件移动到 `grp-{module}-model`，但不改变 package 声明
 3. **不修改 model 实体的 package 声明**：保持原有包路径不变
 4. **不修改引用 model 实体的 import 语句**：因 package 未变，import 无需修改
 5. **安全迁移**：先读取原文件 → 冲突预检 → 在新位置创建文件 → 验证 → 删除原文件
@@ -135,7 +135,7 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 1. **目录命名修正**：`imp` → `impl`
 2. **DAO 层归位**：按确定性分类规则表处理
 3. **DAO 层 mapper/entity 分离**
-4. **model 实体集中到 api 模块**：物理文件移动，不改变 package 和引用
+4. **model 实体集中到 model 模块**：物理文件移动，不改变 package 和引用
 5. **全局验证无残留**
 
 完整修复规则 → [scripts/refactor-rules.md](scripts/refactor-rules.md)
@@ -154,7 +154,7 @@ com.ctjsoft.gfmis.v3 → 精确匹配   → products/指标/
 | 机制 | 说明 |
 |------|------|
 | Phase 0 幂等性检查 | 执行前检查治理状态 |
-| model 实体集中到 api 模块 | 物理文件移动，但 package 和引用不变 |
+| model 实体集中到 model 模块 | 物理文件移动，但 package 和引用不变 |
 | 标准化确认流程 | 引导用户选择"全部执行" |
 | 执行后校验机制 | 5 个校验检查点 |
 | import 语句规范化 | 禁止通配符导入 |

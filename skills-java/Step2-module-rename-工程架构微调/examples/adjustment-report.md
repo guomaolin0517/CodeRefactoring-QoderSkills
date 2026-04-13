@@ -70,7 +70,7 @@ element-module/
 ├── grp-common-element/
 ├── grp-capability-element/
 │   ├── pom.xml
-│   ├── grp-element-api/
+│   ├── grp-element-model/
 │   ├── element-controller/          ★ 已重命名
 │   └── element-service/             ★ 已重命名
 ├── grp-aggregation-element/

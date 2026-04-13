@@ -19,7 +19,7 @@
 | S2-03 | DAO 层 mapper/entity 分离 | FAIL | 3 |
 | S2-04 | 核心四层目录完整性 | PASS | 0 |
 | S2-05 | resources/mapper 目录对应 | WARN | 1 |
-| S2-06 | model 实体集中到 api 模块 | INFO | - |
+| S2-06 | model 实体集中到 model 模块 | INFO | - |
 
 ---
 
@@ -62,12 +62,12 @@
 |----------|----------|
 | WARN | `resources/mapper/` 下 XML 文件散放在根目录，建议按模块分组 |
 
-### S2-06: model 实体集中到 api 模块（信息提示）
+### S2-06: model 实体集中到 model 模块（信息提示）
 
 | 严重级别 | 说明 |
 |----------|------|
-| INFO | `grp-workflow-api` 模块包含 15 个 model 实体类 |
-| INFO | `workflow-server-com` 模块包含 8 个 model 实体类（建议手动集中到 api 模块） |
+| INFO | `grp-workflow-model` 模块包含 15 个 model 实体类 |
+| INFO | `workflow-server-com` 模块包含 8 个 model 实体类（建议手动集中到 model 模块） |
 | INFO | model 实体类分布情况： |
 |      | - `grp.pt.workflow.model.po.*` → 12 个类 |
 |      | - `grp.pt.workflow.model.dto.*` → 6 个类 |
@@ -84,6 +84,6 @@
 3. **最后处理 S2-03**：将 Mapper 迁入 `dao/mapper/`，创建 `dao/entity/`
 
 **model 实体类处理建议**：
-- 建议手动将 `workflow-server-com` 中的 model 实体类复制到 `grp-workflow-api`
+- 建议手动将 `workflow-server-com` 中的 model 实体类复制到 `grp-workflow-model`
 - **不要修改** package 声明和 import 引用
 - 确保外部系统继续正常引用

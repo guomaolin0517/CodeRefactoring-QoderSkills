@@ -14,7 +14,7 @@
     <artifactId>grp-capability-{module}</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>grp-{module}-api</module>
+        <module>grp-{module}-model</module>
         <module>{module}-server</module>
         <module>{module}-server-com</module>
     </modules>

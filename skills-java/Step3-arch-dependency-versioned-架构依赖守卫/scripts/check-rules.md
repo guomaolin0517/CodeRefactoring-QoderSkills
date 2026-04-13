@@ -195,3 +195,137 @@ Grep flags: -l
 - 跨模块引用非 Feign/API 接口的类 → **WARN**
 
 **风险说明**：跨模块直接引用内部类会导致模块间强耦合，破坏微服务的独立部署能力。
+
+---
+
+## S1-06：分层类未放在正确的模块中（FAIL 级别）
+
+**违规模式**：Controller、Service、DAO、Model 四类核心分层类没有放在对应的 Maven 模块中。
+
+**核心规则（强制，不可违反）**：
+
+| 分层类型 | 必须放在的模块 | 模块 artifactId 模式 | 严重级别 |
+|---------|--------------|---------------------|---------|
+| Controller 控制层 | `grp-{module}-controller` | `{module}-controller` | FAIL |
+| Service 业务层 | `grp-{module}-service` | `{module}-service` | FAIL |
+| DAO 数据层 | `grp-{module}-service` | `{module}-service` | FAIL |
+| Model 实体类 | `grp-{module}-model` | `grp-{module}-model` | FAIL |
+
+**类类型判定标准（强制确定性规则）**：
+
+判定一个 Java 类属于哪种分层类型时，**必须**按以下规则执行，满足**任一条件**即判定为该类型：
+
+### Controller 类判定标准
+
+| 条件编号 | 判定条件 | 说明 |
+|---------|---------|------|
+| C-MOD-1 | 类名以 `Controller` 结尾 | 如 `UserController`、`ButtonController` |
+| C-MOD-2 | 类上标注了 `@RestController` 或 `@Controller` 注解 | 即使类名不以 Controller 结尾 |
+| C-MOD-3 | 类所在包路径包含 `.controller.` | 如 `grp.pt.controller.custom.button.ButtonController` |
+
+### Service 类判定标准
+
+| 条件编号 | 判定条件 | 说明 |
+|---------|---------|------|
+| S-MOD-1 | 类名以 `Service` 结尾且是接口（`interface`） | 如 `IUserService`、`IButtonService` |
+| S-MOD-2 | 类名以 `ServiceImpl` 结尾且标注了 `@Service` 注解 | 如 `UserServiceImpl` |
+| S-MOD-3 | 类所在包路径包含 `.service.` 或 `.service.impl.` | 如 `grp.pt.service.impl.ButtonServiceImpl` |
+
+### DAO 类判定标准
+
+| 条件编号 | 判定条件 | 说明 |
+|---------|---------|------|
+| D-MOD-1 | 类名以 `Dao` 或 `DAO` 结尾 | 如 `UserDao`、`IUserDAO` |
+| D-MOD-2 | 类名以 `Mapper` 结尾且标注了 `@Mapper` 注解 | 如 `UserMapper` |
+| D-MOD-3 | 类所在包路径包含 `.dao.` 或 `.mapper.` | 如 `grp.pt.dao.UserDao`、`grp.pt.mapper.UserMapper` |
+| D-MOD-4 | 类上标注了 `@Repository` 注解 | 如 `@Repository public class UserDaoImpl` |
+
+### Model 实体类判定标准
+
+| 条件编号 | 判定条件 | 说明 |
+|---------|---------|------|
+| M-MOD-1 | 类所在包路径包含 `.model.` | 如 `grp.pt.model.po.User`、`grp.pt.model.dto.UserDTO` |
+| M-MOD-2 | 类名以 `Entity`、`PO`、`DTO`、`VO`、`Query` 结尾 | 如 `UserEntity`、`UserPO`、`UserDTO` |
+| M-MOD-3 | 类上标注了 `@Entity`、`@Table` 注解 | JPA/MyBatis 实体类 |
+
+**强制全量扫描指令（不可跳过，必须先于单文件分析执行）**：
+
+在开始逐文件分析之前，**必须**先执行以下 Grep 全量扫描，将扫描结果完整列出：
+
+```
+# 扫描1：查找所有不在正确模块中的 Controller 类
+# 1.1 先找出所有 Controller 类文件
+Grep pattern: @(RestController|Controller)\b|class\s+[A-Z][a-zA-Z]*Controller
+Grep path: {project-root}
+Grep flags: -l
+
+# 扫描2：查找所有不在正确模块中的 Service 类
+# 2.1 先找出所有 Service 接口和实现类
+Grep pattern: interface\s+[A-Z][a-zA-Z]*Service|class\s+[A-Z][a-zA-Z]*ServiceImpl|@Service\b
+Grep path: {project-root}
+Grep flags: -l
+
+# 扫描3：查找所有不在正确模块中的 DAO 类
+# 3.1 先找出所有 DAO/Mapper 类
+Grep pattern: interface\s+[A-Z][a-zA-Z]*(Dao|DAO|Mapper)|@(Mapper|Repository)\b
+Grep path: {project-root}
+Grep flags: -l
+
+# 扫描4：查找所有不在正确模块中的 Model 实体类
+# 4.1 先找出所有 Model 实体类
+Grep pattern: class\s+[A-Z][a-zA-Z]*(Entity|PO|DTO|VO|Query)|@(Entity|Table)\b
+Grep path: {project-root}
+Grep flags: -l
+```
+
+**模块归属验证方法**：
+
+对于扫描到的每个类文件，**必须**执行以下验证：
+
+1. **确定类所属模块**：根据文件路径判断该类当前在哪个 Maven 模块中
+   - 文件路径包含 `{module}-controller/` 或 `grp-{module}-controller/` → 属于 controller 模块
+   - 文件路径包含 `{module}-service/` 或 `grp-{module}-service/` → 属于 service 模块
+   - 文件路径包含 `grp-{module}-model/` → 属于 model 模块
+
+2. **验证类类型与模块是否匹配**：
+   - Controller 类（满足 C-MOD-1/2/3）→ **必须**在 `grp-{module}-controller` 模块中
+   - Service 类（满足 S-MOD-1/2/3）→ **必须**在 `grp-{module}-service` 模块中
+   - DAO 类（满足 D-MOD-1/2/3/4）→ **必须**在 `grp-{module}-service` 模块中
+   - Model 类（满足 M-MOD-1/2/3）→ **必须**在 `grp-{module}-model` 模块中
+
+3. **判定违规**：
+   - Controller 类在 service/model/其他模块中 → **FAIL**
+   - Service 类在 controller/model/其他模块中 → **FAIL**
+   - DAO 类在 controller/model/其他模块中 → **FAIL**
+   - Model 类在 controller/service/其他模块中 → **FAIL**
+
+**检查报告输出格式**：
+
+对于每个违规项，必须在检查报告中按以下格式输出：
+
+| 严重级别 | 文件路径 | 当前所属模块 | 应属模块 | 类类型 | 问题描述 |
+|---------|----------|------------|---------|--------|----------|
+| FAIL | `grp/pt/controller/xxx/UserController.java` | `grp-xxx-external` | `grp-xxx-controller` | Controller | Controller 类未放在 controller 模块 |
+| FAIL | `grp/pt/service/impl/UserServiceImpl.java` | `grp-xxx-controller` | `grp-xxx-service` | Service | Service 实现类未放在 service 模块 |
+| FAIL | `grp/pt/dao/UserDao.java` | `grp-xxx-controller` | `grp-xxx-service` | DAO | DAO 接口未放在 service 模块 |
+| FAIL | `grp/pt/model/po/UserPO.java` | `grp-xxx-service` | `grp-xxx-model` | Model | Model 实体未放在 model 模块 |
+
+**修复方案**：
+
+对于检查发现的 S1-06 违规项，修复方案为：
+
+1. **创建目标模块**（如不存在）：在 `grp-capability-{module}/` 下创建缺失的模块目录
+2. **移动文件**：将类文件移动到目标模块的正确包路径下
+3. **更新 package 声明**：根据新的目录结构调整 package 声明
+4. **更新 import 引用**：全局搜索并更新所有引用该类的 import 语句
+5. **更新 POM 依赖**：确保依赖关系正确（controller → service → model）
+6. **编译验证**：执行 `mvn compile` 确保编译通过
+
+**重要说明**：
+- S1-06 是 **FAIL 级别**，必须修复，不得跳过
+- 多次执行中，同一个类的模块归属判定结果必须一致（确定性规则）
+- 类类型判定优先级：Controller > Service > DAO > Model（按上表顺序，命中第一个即停止）
+- 此检查应在 Step3 阶段最先执行，作为架构检查的第一道关卡
+
+---
+

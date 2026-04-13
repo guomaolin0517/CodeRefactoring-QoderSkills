@@ -5,7 +5,7 @@
 | 名称模式 | 目标层级 | 目标容器 |
 |----------|----------|----------|
 | `grp-*-com` (logger/exception/util/database/cache/gray 等通用) | 底座层 | `grp-common-boot/` |
-| `grp-{module}-api` | 能力层 | `grp-capability-{module}/` |
+| `grp-{module}-model` | 能力层 | `grp-capability-{module}/` |
 | `{module}-server` 或 `{module}-server{N}` | 能力层 | `grp-capability-{module}/` |
 | `{module}-server-com` 或 `{module}-server{N}-com` | 能力层 | `grp-capability-{module}/` |
 | `{module}-server-springcloud` 或 `{module}-server{N}-springcloud` | 聚合层 | `grp-aggregation-{module}/` |
@@ -35,7 +35,7 @@
 分析规则：
 - 以 `grp-*-com/` 命名的通用模块 → 底座层 `grp-common-boot/`
 - 以 `*-server/`、`*-server-com/`、`*-server2/`、`*-server2-com/` 命名 → 能力层 `grp-capability-{module}/`
-- 以 `grp-*-api/` 命名 → 能力层 `grp-capability-{module}/`
+- 以 `grp-*-model/` 命名 → 能力层 `grp-capability-{module}/`
 - 以 `*-springcloud/`、`*-huawei/`、`*-tencent/`、`*-pivotal/` 命名 → 聚合层 `grp-aggregation-{module}/`
 - 以 `*-feign-com/`、`*-feign-api/` 命名 → 能力层 `grp-capability-{module}/`
 
@@ -70,8 +70,8 @@
 ```
 原始模块：4A-server-api（仅此一个 4A 模块，被 framework-server2-com 依赖）
 判定：4A 业务域仅 1 个模块，且作为 framework 的依赖 → 触发吸收
-结果：重命名为 grp-4a-api，放入 framework-module/grp-capability-framework/grp-4a-api/
-       （而非创建独立的 4a-module/grp-capability-4a/grp-4a-api/）
+结果：重命名为 grp-4a-model，放入 framework-module/grp-capability-framework/grp-4a-model/
+       （而非创建独立的 4a-module/grp-capability-4a/grp-4a-model/）
 ```
 
 ### 不吸收的情况

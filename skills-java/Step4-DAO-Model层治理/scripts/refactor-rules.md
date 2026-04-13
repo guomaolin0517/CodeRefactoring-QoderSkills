@@ -153,16 +153,16 @@ model 实体类分散在多个模块中会导致：
 2. 同一 model 可能在多个模块中重复存在
 3. 不利于 API 的统一管理和版本控制
 
-**解决方案**：将所有 model 实体类集中到 `grp-{module}-api` 模块中，但保持 package 声明不变，这样：
-- 外部系统只需引用 api 模块即可获得所有 model
+**解决方案**：将所有 model 实体类集中到 `grp-{module}-model` 模块中，但保持 package 声明不变，这样：
+- 外部系统只需引用 model 模块即可获得所有 model
 - 所有 import 语句无需修改（因为 package 未变）
 - 编译和运行时路径保持一致
 
 ### 操作步骤
 
-1. **识别 api 模块**：找到 `grp-{module}-api` 模块的源码目录
-   - 通常位于：`{module}-module/grp-capability-{module}/grp-{module}-api/src/main/java/`
-   - 示例：`workflow-module/grp-capability-workflow/grp-workflow-api/src/main/java/`
+1. **识别 model 模块**：找到 `grp-{module}-model` 模块的源码目录
+   - 通常位于：`{module}-module/grp-capability-{module}/grp-{module}-model/src/main/java/`
+   - 示例：`workflow-module/grp-capability-workflow/grp-workflow-model/src/main/java/`
 
 2. **扫描 model 实体类**：识别所有业务模块中的 model 相关类
    - 包括：`model/po/`、`model/dto/`、`model/vo/`、`model/query/` 下的所有类
@@ -175,7 +175,7 @@ model 实体类分散在多个模块中会导致：
    - 示例：
      ```
      源文件：workflow-server-com/src/main/java/grp/pt/workflow/model/po/WfNode.java
-     目标：  grp-workflow-api/src/main/java/grp/pt/workflow/model/po/WfNode.java
+     目标：  grp-workflow-model/src/main/java/grp/pt/workflow/model/po/WfNode.java
      package：保持 grp.pt.workflow.model.po 不变
      ```
 
@@ -200,7 +200,7 @@ model 实体类分散在多个模块中会导致：
 ```
 移动前：
 ├── grp-capability-workflow/
-│   ├── grp-workflow-api/
+│   ├── grp-workflow-model/
 │   │   └── src/main/java/grp/pt/
 │   │       ├── workflow/model/po/        # 部分 model
 │   │       └── common/model/po/          # 部分 model
@@ -210,7 +210,7 @@ model 实体类分散在多个模块中会导致：
 
 移动后：
 ├── grp-capability-workflow/
-│   ├── grp-workflow-api/
+│   ├── grp-workflow-model/
 │   │   └── src/main/java/grp/pt/
 │   │       ├── workflow/model/po/        # 所有 model（集中管理）
 │   │       └── common/model/po/          # 所有 model（集中管理）
@@ -282,7 +282,7 @@ model 实体类分散在多个模块中会导致：
 | V1 | 无 `imp/` 目录残留 | = 0 | `Glob("**/imp/*.java")` 应返回空 |
 | V2 | DAO 层归位正确 | `dao/` 根目录仅有接口文件 | 按分类规则表检查 |
 | V3 | mapper/entity 分离正确 | Mapper 在 `dao/mapper/`，Entity 在 `dao/entity/` | 检查路径 |
-| V4 | model 实体已集中到 api 模块 | 所有 model 类在 `grp-{module}-api` 中 | 检查 api 模块文件列表 |
+| V4 | model 实体已集中到 model 模块 | 所有 model 类在 `grp-{module}-model` 中 | 检查 model 模块文件列表 |
 | V5 | model 实体 package 未改变 | package 声明与移动前一致 | 对比修复前后的 package 行 |
 
 ### 校验失败处理

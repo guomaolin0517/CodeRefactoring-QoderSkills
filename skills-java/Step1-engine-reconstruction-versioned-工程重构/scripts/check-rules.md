@@ -37,7 +37,7 @@
 | 编号 | 检查项 | 规则 |
 |------|--------|------|
 | C-01 | 能力层 POM 类型 | `grp-capability-{module}/pom.xml` 的 packaging 必须为 `pom` |
-| C-02 | API 定义模块命名 | 若存在 API 定义模块，必须命名为 `grp-{module}-api/` |
+| C-02 | Model 定义模块命名 | 若存在 Model 定义模块，必须命名为 `grp-{module}-model/` |
 | C-03 | 接口层模块命名 | Controller 层模块必须命名为 `{module}-server/` |
 | C-04 | 实现层模块命名 | 业务实现模块必须命名为 `{module}-server-com/` |
 | C-05 | 能力层 modules 声明 | 能力层 POM 的 `<modules>` 必须包含其所有子模块 |

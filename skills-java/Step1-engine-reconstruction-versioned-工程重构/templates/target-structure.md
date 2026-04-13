@@ -17,7 +17,7 @@
 │   │   └── ...                          # 模块级通用子模块（按需）
 │   ├── grp-capability-{module}/         # 能力层容器
 │   │   ├── pom.xml                      # packaging=pom
-│   │   ├── grp-{module}-api/            # API定义 (可选)
+│   │   ├── grp-{module}-model/            # Model定义 (可选)
 │   │   ├── {module}-server/             # Controller层
 │   │   ├── {module}-server-com/         # 业务实现层
 │   │   └── {module}-feign-com/          # Feign SDK
